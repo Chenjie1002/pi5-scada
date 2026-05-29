@@ -92,3 +92,17 @@ def test_list_records_orders_by_completed_at_descending(tmp_path: Path) -> None:
     assert response.status_code == 200
     assert [item["record_seq"] for item in response.json()["items"]] == [1002, 1001]
     assert response.json()["total"] == 2
+
+
+def test_list_records_applies_limit_to_items_and_total(tmp_path: Path) -> None:
+    client, engine = make_records_client(tmp_path)
+    older = datetime(2026, 5, 29, 8, 0, tzinfo=timezone.utc)
+    newer = datetime(2026, 5, 29, 8, 5, tzinfo=timezone.utc)
+    add_record(engine, record_seq=1001, product_id="P1001", completed_at=older)
+    add_record(engine, record_seq=1002, product_id="P1002", completed_at=newer)
+
+    response = client.get("/api/records?limit=1")
+
+    assert response.status_code == 200
+    assert [item["record_seq"] for item in response.json()["items"]] == [1002]
+    assert response.json()["total"] == 1

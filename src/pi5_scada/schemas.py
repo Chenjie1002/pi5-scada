@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pydantic import BaseModel, ConfigDict, field_serializer
 
 
-class ProductRecordRead(BaseModel):
+class ProductRecordOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -22,6 +22,6 @@ class ProductRecordRead(BaseModel):
         return value.isoformat().replace("+00:00", "Z")
 
 
-class ProductRecordList(BaseModel):
-    items: list[ProductRecordRead]
+class ProductRecordListOut(BaseModel):
+    items: list[ProductRecordOut]
     total: int
