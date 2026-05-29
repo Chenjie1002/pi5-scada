@@ -1,13 +1,15 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import create_engine
+import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
+from pi5_scada.db import make_engine
 from pi5_scada.models import Base, ProductRecord, ProductRawData
 
 
 def test_product_record_unique_trace_key() -> None:
-    engine = create_engine("sqlite:///:memory:")
+    engine = make_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
 
@@ -28,14 +30,28 @@ def test_product_record_unique_trace_key() -> None:
 
         loaded = session.query(ProductRecord).one()
 
-    assert loaded.line_id == "line-1"
-    assert loaded.station_id == "station-1"
-    assert loaded.record_seq == 1001
-    assert loaded.plc_snapshot_json == {"pressure": 1.23}
+        assert loaded.line_id == "line-1"
+        assert loaded.station_id == "station-1"
+        assert loaded.record_seq == 1001
+        assert loaded.plc_snapshot_json == {"pressure": 1.23}
+
+        duplicate = ProductRecord(
+            line_id="line-1",
+            station_id="station-1",
+            record_seq=1001,
+            product_id="P1001-duplicate",
+            result="OK",
+            cycle_time_ms=1250,
+            completed_at=completed_at,
+            plc_snapshot_json={"pressure": 1.24},
+        )
+        session.add(duplicate)
+        with pytest.raises(IntegrityError):
+            session.commit()
 
 
 def test_raw_data_can_reference_product_record() -> None:
-    engine = create_engine("sqlite:///:memory:")
+    engine = make_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
 
@@ -65,6 +81,25 @@ def test_raw_data_can_reference_product_record() -> None:
 
         loaded = session.query(ProductRawData).one()
 
-    assert loaded.product_record_id == record_id
-    assert loaded.record_seq == 1002
-    assert loaded.status == "pending"
+        assert loaded.product_record_id == record_id
+        assert loaded.record_seq == 1002
+        assert loaded.status == "pending"
+
+
+def test_raw_data_requires_existing_product_record() -> None:
+    engine = make_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        raw = ProductRawData(
+            product_record_id=999,
+            record_seq=1003,
+            source_type="mcu",
+            capture_seq=502,
+            status="pending",
+        )
+        session.add(raw)
+
+        with pytest.raises(IntegrityError):
+            session.commit()
