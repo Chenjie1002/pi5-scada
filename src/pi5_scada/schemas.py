@@ -25,3 +25,33 @@ class ProductRecordOut(BaseModel):
 class ProductRecordListOut(BaseModel):
     items: list[ProductRecordOut]
     total: int
+
+
+class ProductRecordDetailOut(ProductRecordOut):
+    plc_snapshot_json: dict
+
+
+class ProductRawDataOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    product_record_id: int
+    record_seq: int
+    source_type: str
+    capture_seq: int | None
+    status: str
+    file_path: str | None
+    size_bytes: int | None
+    checksum: str | None
+    format_version: str | None
+    captured_at: datetime | None
+    stored_at: datetime | None
+    error_message: str | None
+
+    @field_serializer("captured_at", "stored_at")
+    def serialize_optional_datetime(self, value: datetime | None) -> str | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value.isoformat().replace("+00:00", "Z")

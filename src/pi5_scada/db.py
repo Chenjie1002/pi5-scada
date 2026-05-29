@@ -30,10 +30,19 @@ def check_database(engine: Engine) -> bool:
     return True
 
 
-settings = Settings()
-SessionLocal = make_session_factory(settings.database_url)
+def initialize_schema(engine: Engine) -> None:
+    from pi5_scada.models import Base
+
+    Base.metadata.create_all(engine)
+
+
+SessionLocal: sessionmaker[Session] | None = None
 
 
 def get_session() -> Generator[Session, None, None]:
+    global SessionLocal
+    if SessionLocal is None:
+        settings = Settings()
+        SessionLocal = make_session_factory(settings.database_url)
     with SessionLocal() as session:
         yield session
