@@ -10,5 +10,5 @@ from pi5_scada.models import Base
 def client() -> TestClient:
     engine = make_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
-    app = create_app(database_url="sqlite:///:memory:")
+    app = create_app(database_url="sqlite:///:memory:", engine=engine)
     return TestClient(app)

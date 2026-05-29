@@ -8,7 +8,7 @@ router = APIRouter()
 @router.get("/health")
 def get_health(request: Request) -> dict[str, str]:
     settings = request.app.state.settings
-    check_database(settings.database_url)
+    check_database(request.app.state.engine)
     return {
         "status": "ok",
         "app": settings.app_name,

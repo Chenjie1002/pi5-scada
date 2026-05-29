@@ -1,6 +1,7 @@
 from collections.abc import Generator
 
 from sqlalchemy import create_engine, event, text
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from pi5_scada.config import Settings
@@ -23,8 +24,7 @@ def make_session_factory(database_url: str) -> sessionmaker[Session]:
     return sessionmaker(bind=make_engine(database_url), autoflush=False, autocommit=False)
 
 
-def check_database(database_url: str) -> bool:
-    engine = make_engine(database_url)
+def check_database(engine: Engine) -> bool:
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
     return True
