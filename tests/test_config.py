@@ -2,7 +2,7 @@ from pi5_scada.config import Settings
 
 
 def test_settings_have_safe_defaults() -> None:
-    settings = Settings()
+    settings = Settings(_env_file=None)
 
     assert settings.app_name == "Pi5 SCADA"
     assert settings.poll_interval_ms == 200
