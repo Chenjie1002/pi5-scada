@@ -106,3 +106,11 @@ def test_list_records_applies_limit_to_items_and_total(tmp_path: Path) -> None:
     assert response.status_code == 200
     assert [item["record_seq"] for item in response.json()["items"]] == [1002]
     assert response.json()["total"] == 1
+
+
+def test_list_records_rejects_negative_limit(tmp_path: Path) -> None:
+    client, _engine = make_records_client(tmp_path)
+
+    response = client.get("/api/records?limit=-1")
+
+    assert response.status_code == 422
