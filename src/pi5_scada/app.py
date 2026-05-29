@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from sqlalchemy.engine import Engine
 
+from pi5_scada.api.dashboard import router as dashboard_router
 from pi5_scada.api.health import router as health_router
 from pi5_scada.api.records import router as records_router
 from pi5_scada.config import Settings
@@ -17,4 +18,5 @@ def create_app(database_url: str | None = None, engine: Engine | None = None) ->
     app.state.engine = engine if engine is not None else make_engine(settings.database_url)
     app.include_router(health_router, prefix="/api")
     app.include_router(records_router, prefix="/api")
+    app.include_router(dashboard_router, prefix="/api")
     return app
