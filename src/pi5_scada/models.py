@@ -1,17 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint, event, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.types import JSON
 
 
 class Base(DeclarativeBase):
     pass
-
-
-@event.listens_for(Session, "before_commit")
-def _keep_attributes_loaded_after_commit(session: Session) -> None:
-    session.expire_on_commit = False
 
 
 class ProductRecord(Base):

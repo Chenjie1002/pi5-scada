@@ -52,8 +52,9 @@ def test_raw_data_can_reference_product_record() -> None:
         )
         session.add(record)
         session.flush()
+        record_id = record.id
         raw = ProductRawData(
-            product_record_id=record.id,
+            product_record_id=record_id,
             record_seq=1002,
             source_type="mcu",
             capture_seq=501,
@@ -64,6 +65,6 @@ def test_raw_data_can_reference_product_record() -> None:
 
         loaded = session.query(ProductRawData).one()
 
-    assert loaded.product_record_id == record.id
+    assert loaded.product_record_id == record_id
     assert loaded.record_seq == 1002
     assert loaded.status == "pending"
